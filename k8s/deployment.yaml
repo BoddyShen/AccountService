@@ -1,0 +1,103 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: account-service-app
+spec:
+  selector:
+    matchLabels:
+      app: account-service-app
+  template:
+    metadata:
+      labels:
+        app: account-service-app
+    spec:
+      containers:
+        - name: account-service-app
+          image: pohengshen96/accountservice
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8082
+          env:
+            - name: CONFIG_SERVER_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: config-cm
+                  key: config_url
+            # - name: EUREKA_SERVER_ADDRESS
+            #   valueFrom:
+            #     configMapKeyRef:
+            #       name: eureka-cm
+            #       key: eureka_service_address
+            # mongodb
+            - name: STAGING_MONGO_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  name: mongodb-config
+                  key: mongo_database
+            - name: STAGING_MONGO_CLUSTER
+              valueFrom:
+                configMapKeyRef:
+                  name: mongodb-config
+                  key: mongo_cluster
+            - name: STAGING_MONGO_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mongo-secret
+                  key: mongo_user
+            - name: STAGING_MONGO_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mongo-secret
+                  key: mongo_password
+            # redis
+            - name: REDIS_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: redis-config
+                  key: url
+            # gcp
+            - name: GCP_STORAGE_BUCKET_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: gcp-config
+                  key: bucket_name
+            - name: GCP_STORAGE_PROJECT_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: gcp-config
+                  key: project_id
+            - name: GCP_STORAGE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: gcp-config
+                  key: storage_url
+            - name: GCP_CREDENTIALS
+              value: '/etc/gcp/credentials.json'
+
+            # jwt
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: jwt-secret
+                  key: jwt_secret
+
+          volumeMounts:
+            - name: gcp-credentials-volume
+              mountPath: '/etc/gcp'
+              readOnly: true
+      volumes:
+        - name: gcp-credentials-volume
+          secret:
+            secretName: gcp-secret
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: account-service-svc
+spec:
+  selector:
+    app: account-service-app
+  ports:
+    - port: 80
+      targetPort: 8082

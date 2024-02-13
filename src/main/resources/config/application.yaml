@@ -1,0 +1,43 @@
+spring:
+  data:
+    mongodb:
+      database: ${STAGING_MONGO_DATABASE:env.STAGING_MONGO_DATABASE}
+      uri: mongodb+srv://${STAGING_MONGO_USER:env.STAGING_MONGO_USER}:${STAGING_MONGO_PASSWORD:env.STAGING_MONGO_PASSWORD}@${STAGING_MONGO_CLUSTER:env.STAGING_MONGO_CLUSTER}
+    redis:
+      host: ${REDIS_URL}
+      port: 6379
+  cloud:
+    gcp:
+      storage:
+        bucket:
+          name: ${GCP_STORAGE_BUCKET_NAME:env.GCP_STORAGE_BUCKET_NAME}
+        project-id: ${GCP_STORAGE_PROJECT_ID:env.GCP_STORAGE_PROJECT_ID}
+      credentials:
+        # encoded-key: ${GOOGLE_APPLICATION_CREDENTIALS_JSON}
+        location: file:///etc/gcp/credentials.json
+        # location:  classpath:quick-replica-key.json
+  application:
+    name: ACCOUNT-SERVICE
+  config:
+    import: configserver:${CONFIG_SERVER_URL:http://localhost:9296}
+  kafka:
+    bootstrap-servers: 34.125.100.102:9092
+    consumer:
+      group-id: GroupID1
+
+server:
+  port: 8082
+
+jwt:
+  secret: ${JWT_SECRET:env.JWT_SECRET}
+
+gcp:
+  url: ${GCP_STORAGE_URL:env.GCP_STORAGE_URL}
+#eureka:
+#  instance:
+#    prefer-ip-address: true
+#  client:
+#    fetch-registry: true
+#    registry-with-eureka: true
+#    service-url:
+#      defaultZone: ${EUREKA_SERVER_ADDRESS:http://localhost:8761/eureka}
